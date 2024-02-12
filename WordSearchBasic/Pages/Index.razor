@@ -136,60 +136,79 @@
         return true;
     }
 
-    private void PlaceWord(string word, int startRow, int startCol, int direction)
-    {
-        // Place the word in the grid
-        for (int i = 0; i < word.Length; i++)
+    /// <summary>
+        /// Places a word in the grid starting from the specified row and column, in the specified direction.
+        /// </summary>
+        /// <param name="word">The word to be placed in the grid.</param>
+        /// <param name="startRow">The starting row index.</param>
+        /// <param name="startCol">The starting column index.</param>
+        /// <param name="direction">The direction in which the word should be placed (0 for horizontal, 1 for vertical, 2 for diagonal).</param>
+        private void PlaceWord(string word, int startRow, int startCol, int direction)
         {
-            int row = startRow;
-            int col = startCol;
-
-            switch (direction)
+            // Place the word in the grid
+            for (int i = 0; i < word.Length; i++)
             {
-                case 0: // horizontal
-                    col += i;
-                    break;
-                case 1: // vertical
-                    row += i;
-                    break;
-                case 2: // diagonal
-                    row += i;
-                    col += i;
-                    break;
+                int row = startRow;
+                int col = startCol;
+
+                switch (direction)
+                {
+                    case 0: // horizontal
+                        col += i;
+                        break;
+                    case 1: // vertical
+                        row += i;
+                        break;
+                    case 2: // diagonal
+                        row += i;
+                        col += i;
+                        break;
+                }
+
+                board[row, col] = word[i];
+            }
+        }
+
+        /// <summary>
+        /// Selects a cell at the specified row and column.
+        /// </summary>
+        /// <param name="i">The row index of the cell.</param>
+        /// <param name="j">The column index of the cell.</param>
+        private async void SelectCell(int i, int j)
+        {
+            // Check if the cell is already selected
+            if (selectedCells.Contains((i, j)))
+            {
+                return; // If the cell is already selected, do nothing
             }
 
-            board[row, col] = word[i];
-        }
-    }
+            // Add the selected cell to the list of selected cells
+            selectedCells.Add((i, j));
 
-    private async void SelectCell(int i, int j)
-    {
-        // Check if the cell is already selected
-        if (selectedCells.Contains((i, j)))
-        {
-            return; // If the cell is already selected, do nothing
-        }
+            // Build the current word from the selected cells
+            currentWord.Clear();
+            foreach (var (row, col) in selectedCells)
+            {
+                currentWord.Append(board[row, col]);
+            }
 
-        // Add the selected cell to the list of selected cells
-        selectedCells.Add((i, j));
-
-        // Build the current word from the selected cells
-        currentWord.Clear();
-        foreach (var (row, col) in selectedCells)
-        {
-            currentWord.Append(board[row, col]);
+            // Check if the current word is in the list of words
+            string currentWordStr = currentWord.ToString();
+            if (words.Contains(currentWordStr))
+            {
+                words = words.Where(word => word != currentWordStr).ToList(); // Create a new list without the guessed word
+                guessedCells.AddRange(selectedCells); // Add the selected cells to guessedCells
+                selectedCells.Clear(); // Clear the selected cells
+            }        
         }
 
-        // Check if the current word is in the list of words
-        string currentWordStr = currentWord.ToString();
-        if (words.Contains(currentWordStr))
+        /// <summary>
+        /// Clears the selection by clearing the list of selected cells.
+        /// </summary>
+        private void ClearSelection()
         {
-            words = words.Where(word => word != currentWordStr).ToList(); // Create a new list without the guessed word
-            guessedCells.AddRange(selectedCells); // Add the selected cells to guessedCells
-            selectedCells.Clear(); // Clear the selected cells
-        }        
-    }
-    // Add a new method to clear the selection
+            selectedCells.Clear();
+        }
     private void ClearSelection()
     {
         selectedCells.Clear();
